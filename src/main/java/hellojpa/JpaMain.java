@@ -21,16 +21,22 @@ public class JpaMain {
 
             Member member = new Member();
             member.setUsername("member1");
-            member.setTeamId(team.getId()); //외래키 식별자를 직접 다루고 있음.
+            member.setTeam(team);
             em.persist(member);
+
+            //1차캐시에서 가져오기때문에 select문 없음 -> db쿼리 직접 보고싶을땐 어떻게 하지??
+            //-> flush강제호출 - 영속성 컨텍스트에 있는걸 db쿼리 다 날려버리고 clear로 영속성컨텍스트 초기화
+            em.flush();
+            em.clear();
 
             //찾아온 멤버가 어느 팀 소속인지 알고싶을 때
             Member findMember = em.find(Member.class, member.getId());
-            Long findTeamId = findMember.getTeamId();
-            Team findTeam = em.find(Team.class, findTeamId);
+            Team findTeam = findMember.getTeam();
+            System.out.println("findTeam.getName() = " + findTeam.getName());
 
             tx.commit();
         }catch (Exception e) {
+            e.printStackTrace();
             tx.rollback();
         } finally {
             em.close();
